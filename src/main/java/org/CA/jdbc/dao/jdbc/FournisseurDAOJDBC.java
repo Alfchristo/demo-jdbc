@@ -22,49 +22,69 @@ public class FournisseurDAOJDBC implements FournisseurDAO {
         DB_PWD = bundle.getString ("db.password");
     }
 
-    private static final String INSERT_QUERY = "INSERT INTO fournisseur (NOM) VALUES ('%s')";
+    private static final String INSERT_QUERY = "INSERT INTO FOURNISSEUR (NOM) VALUES ('%s')";
 
     @Override
     public List<Fournisseur> extraire() throws SQLException {
         List<Fournisseur> fournisseurs = new ArrayList<>();
-        try(Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM FOURNISSEUR")){
-            while(rs.next()) {
+        String sql = "SELECT * FROM FOURNISSEUR";
+
+        try (Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD)) {
+            PreparedStatement pst = cnx.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
                 int id = rs.getInt("ID");
                 String nom = rs.getString("NOM");
                 Fournisseur itemFournisseur = new Fournisseur(id, nom);
                 fournisseurs.add(itemFournisseur);
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            rs.close();
+            pst.close();
         }
         return fournisseurs;
     }
 
     @Override
     public void insert(Fournisseur fournisseurACreer) throws SQLException {
-        try(Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
-            Statement st = cnx.createStatement()){
-            st.executeUpdate(String.format(INSERT_QUERY, fournisseurACreer.getNom()));
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD)) {
+            PreparedStatement pst = connection.prepareStatement(INSERT_QUERY);
+            pst.setString(1, fournisseurACreer.getNom());
+            pst.executeUpdate();
+            pst.close();
         }
     }
 
     @Override
-    public int update(String ancienNom, String nouveauNom) {
-        try
-            (Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD);
-            Statement st = cnx.createStatement()){
-            st.executeUpdate("UPDATE FOURNISSEUR SET nom = 'Exemple' WHERE id = 4");
-            } catch (SQLException e) {
-            System.out.println("Attention : " + e.getMessage());
+    public int update(String ancienNom, String nouveauNom) throws SQLException {
+        try (Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD)) {
+            String sqlUpdate = "UPDATE FOURNISSEUR SET nom = ? WHERE ID = ?";
+            PreparedStatement pst = cnx.prepareStatement(sqlUpdate);
+            pst.setString(1, nouveauNom);
+            pst.setString(2, ancienNom);
+            pst.setInt(2, 4); // Replace with actual ID value
+            int updatedName = pst.executeUpdate();
+            pst.close();
+            return updatedName;
         }
-        return Integer.parseInt(nouveauNom);
     }
 
 
-    @Override
-    public boolean delete(Fournisseur fournisseur) {
-        return false;
-    }
+
+    private static final String DELETE_QUERY = "DELETE FROM FOURNISSEUR WHERE NOM = ?";
+
+@Override
+    public boolean delete(Fournisseur fournisseur) throws SQLException {
+            try (Connection cnx = DriverManager.getConnection(DB_URL, DB_USER, DB_PWD)) {
+                PreparedStatement pst = cnx.prepareStatement(DELETE_QUERY);
+                pst.setString(1, fournisseur.getNom());
+                pst.executeUpdate();
+                pst.close();
+            }
+    return false;
 }
+    }
+
+
+
+
+

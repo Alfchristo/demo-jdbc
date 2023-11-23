@@ -3,6 +3,7 @@ package org.CA.jdbc;
 import org.CA.jdbc.dao.FournisseurDAO;
 import org.CA.jdbc.dao.jdbc.FournisseurDAOJDBC;
 import org.CA.jdbc.entites.Fournisseur;
+import java.sql.SQLException;
 import java.util.List;
 
 public class TestSelectDAO {
@@ -13,7 +14,7 @@ public class TestSelectDAO {
             for (Fournisseur item: fournisseur){
                 System.out.println(item);
             }
-        } catch (Exception e){
+        } catch (SQLException e){
             System.out.println(e.getMessage());
         }
     }
